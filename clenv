@@ -1,0 +1,75 @@
+#!/bin/sh
+
+# set colors
+cn="`echo -e '\r\e[0;1m'`" # normal
+cr="`echo -e '\r\e[1;7m'`" # reverse
+
+# keys
+au="`echo -e '\e[A'`" # arrow up
+ad="`echo -e '\e[B'`" # arrow down
+ec="`echo -e '\e'`"   # escape
+nl="`echo -e '\n'`"   # newline
+
+
+variables='A B C'
+tn=$(echo "$variables" | wc -w)
+echo $tn
+{
+
+  cp=1 # current position
+
+  end=false
+
+  while ! $end; do
+
+     i=1
+     echo "$variables" | tr ' ' '\n' | while read variable; do
+       echo -n "$cn"
+       [[ $cp == $i ]] && echo -n "$cr"
+       echo $variable
+       i=$((i+1))
+     done
+
+     read -sn 1 key
+     [[ "$key" == "$ec" ]] &&
+     {
+        read -sn 2 k2
+        key="$key$k2"
+     }
+
+     case "$key" in
+
+        "$au")
+           cp=$(( cp - 1 ))
+           [[ $cp == 0 ]] && cp=$tn
+           ;;
+
+        "$ad")
+           cp=$(( cp + 1 ))
+           [[ $cp == $(( tn + 1 )) ]] && cp=1
+           ;;
+
+        "$nl")
+           si=true
+           end=true
+           ;;
+
+        "q")
+           si=false
+           end=true
+           ;;
+
+     esac
+
+     tput cuu $tn
+
+  done
+
+  tput cud $(( tn - 1 ))
+  tput cnorm # unhide cursor
+  echo "$cn" # normal colors
+} >&2
+
+$si && eval "echo \$$cp"
+
+
