@@ -11,7 +11,7 @@ ec="`echo -e '\e'`"   # escape
 nl="`echo -e '\n'`"   # newline
 
 
-variables='A B C'
+variables="$(printenv | sed 's;=.*;;' | sort | head -10)"
 tn=$(echo "$variables" | wc -w)
 echo $tn
 {
@@ -23,10 +23,10 @@ echo $tn
   while ! $end; do
 
      i=1
-     echo "$variables" | tr ' ' '\n' | while read variable; do
+     echo "$variables" | while read variable; do
        echo -n "$cn"
        [[ $cp == $i ]] && echo -n "$cr"
-       echo $variable
+       echo " $variable "
        i=$((i+1))
      done
 
