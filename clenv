@@ -1,17 +1,20 @@
 #!/bin/sh
 
+
+echo "$OSTYPE" | grep -q "darwin" && escape="\033" || escape="\e"
+
 # set colors
-cn="`echo -e '\r\e[0;1m'`" # normal
-cr="`echo -e '\r\e[1;7m'`" # reverse
+cn="`echo -e '\r'$escape'[0;1m'`" # normal
+cr="`echo -e '\r'$escape'[1;7m'`" # reverse
 
 # keys
-au="`echo -e '\e[A'`" # arrow up
-ad="`echo -e '\e[B'`" # arrow down
-ec="`echo -e '\e'`"   # escape
+au="`echo -e $escape'[A'`" # arrow up
+ad="`echo -e $escape'[B'`" # arrow down
+ec="`echo -e $escape`"   # escape
 nl="`echo -e '\n'`"   # newline
 
 
-variables="$(printenv | sed 's;=.*;;' | sort | head -10)"
+variables="$(printenv | sed 's;=.*;;' | sort)"
 tn=$(echo "$variables" | wc -w)
 echo $tn
 {
@@ -23,7 +26,7 @@ echo $tn
   while ! $end; do
 
      i=1
-     echo "$variables" | while read variable; do
+     echo "$variables" | head -5 | while read variable; do
        echo -n "$cn"
        [[ $cp == $i ]] && echo -n "$cr"
        echo " $variable "
@@ -36,7 +39,6 @@ echo $tn
         read -sn 2 k2
         key="$key$k2"
      }
-
      case "$key" in
 
         "$au")
@@ -61,7 +63,8 @@ echo $tn
 
      esac
 
-     tput cuu $tn
+     tput cuu 5
+      echo "- $key"
 
   done
 

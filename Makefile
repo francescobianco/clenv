@@ -1,0 +1,6 @@
+
+
+
+
+test-bash:
+	bash clenv
