@@ -12,13 +12,12 @@ au="`echo -e $escape'[A'`" # arrow up
 ad="`echo -e $escape'[B'`" # arrow down
 ec="`echo -e $escape`"   # escape
 nl="`echo -e '\n'`"   # newline
+bs="`echo -e '\x7f'`"   # newline
 
 tput civis
 
-variables="$(printenv | sed 's;=.*;;' | sort)"
-tn=$(echo "$variables" | wc -w)
-
-
+environment="$(printenv | sed 's;=.*;;' | sort)"
+variables
 
 {
 
@@ -31,7 +30,14 @@ tn=$(echo "$variables" | wc -w)
     echo  ""
 
     index=1
+    variables="$environment"
+    [ -n "$query" ] && variables=$(echo "$environment" | grep -Ei "$query")
+    #if [ -n "$query" ]; then
+    #  printf %s "$query" | od -vtc -to1
+    #  exit
+    #fi
     while [ "$index" -ne 6 ]; do
+      tput el
       variable=$(echo "$variables" | sed -n $index'p')
       if [[ $cp == $index ]]; then
         echo -n "$cr > $variable  $cn"
@@ -43,10 +49,11 @@ tn=$(echo "$variables" | wc -w)
     done
 
     tput cuu 5
-    echo -ne "\rFilter variable: $query"
+    echo -ne "\rFilter variable: $key_code"
 
     tput cnorm
      read -sn 1 key
+     key_code=$(LC_CTYPE=C printf '%d' "'$key")
      [[ "$key" == "$ec" ]] &&
      {
         read -sn 2 k2
@@ -64,6 +71,10 @@ tn=$(echo "$variables" | wc -w)
         "$ad")
            cp=$(( cp + 1 ))
            [[ $cp == 6 ]] && cp=1
+           ;;
+
+        "$bs")
+          query="$query$key"
            ;;
 
         "$nl")
