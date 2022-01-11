@@ -13,10 +13,13 @@ ad="`echo -e $escape'[B'`" # arrow down
 ec="`echo -e $escape`"   # escape
 nl="`echo -e '\n'`"   # newline
 
+tput civis
 
 variables="$(printenv | sed 's;=.*;;' | sort)"
 tn=$(echo "$variables" | wc -w)
-echo $tn
+
+
+
 {
 
   cp=1 # current position
@@ -24,31 +27,43 @@ echo $tn
   end=false
 
   while ! $end; do
+    tput civis
+    echo  ""
 
-     i=1
-     echo "$variables" | head -5 | while read variable; do
-       echo -n "$cn"
-       [[ $cp == $i ]] && echo -n "$cr"
-       echo " $variable "
-       i=$((i+1))
-     done
+    index=1
+    while [ "$index" -ne 6 ]; do
+      variable=$(echo "$variables" | sed -n $index'p')
+      if [[ $cp == $index ]]; then
+        echo -n "$cr > $variable  $cn"
+      else
+        echo -n "   $variable  "
+      fi
+      [ "$index" -ne 5 ] && echo ""
+      index=$((index + 1))
+    done
 
+    tput cuu 5
+    echo -ne "\rFilter variable: $query"
+
+    tput cnorm
      read -sn 1 key
      [[ "$key" == "$ec" ]] &&
      {
         read -sn 2 k2
         key="$key$k2"
      }
+
+     tput civis
      case "$key" in
 
         "$au")
            cp=$(( cp - 1 ))
-           [[ $cp == 0 ]] && cp=$tn
+           [[ $cp == 0 ]] && cp=5
            ;;
 
         "$ad")
            cp=$(( cp + 1 ))
-           [[ $cp == $(( tn + 1 )) ]] && cp=1
+           [[ $cp == 6 ]] && cp=1
            ;;
 
         "$nl")
@@ -61,10 +76,12 @@ echo $tn
            end=true
            ;;
 
+        *)
+          query="$query$key"
+
      esac
 
-     tput cuu 5
-      echo "- $key"
+ #     echo "- $key"
 
   done
 
